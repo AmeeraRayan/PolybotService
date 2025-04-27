@@ -63,7 +63,17 @@ class Bot:
     def handle_message(self, msg):
         """Bot Main message handler"""
         logger.info(f'Incoming message: {msg}')
-        self.send_text(msg['chat']['id'], f'Your original message: {msg["text"]}')
+        if "text" in msg:
+            # if it is a normal text message
+            self.send_text(msg['chat']['id'], f'Your original message: {msg["text"]}')
+        elif "caption" in msg:
+            # if it is a photo with a caption
+            self.send_text(msg['chat']['id'], f'Your photo caption: {msg["caption"]}')
+        elif "photo" in msg:
+            # if it is a photo without caption
+            self.send_text(msg['chat']['id'], "I received a photo without caption!")
+        else:
+            self.send_text(msg['chat']['id'], "I received something else.")
 
 
 class QuoteBot(Bot):
@@ -75,4 +85,39 @@ class QuoteBot(Bot):
 
 
 class ImageProcessingBot(Bot):
-    pass
+    def handle_message(self, msg):
+        logger.info(f'Incoming message: {msg}')
+
+        if "photo" in msg:
+            img_path = self.download_user_photo(msg)
+            img = Img(img_path)
+
+            if "caption" in msg:
+                caption = msg["caption"].lower()
+
+                if caption == "rotate":
+                    img.rotate()
+                elif caption == "blur":
+                    img.blur()
+                elif caption == "salt and pepper":
+                    img.salt_n_pepper()
+                elif caption == "segment":
+                    img.segment()
+                elif caption == "contour":
+                    img.contour()
+                else:
+                    self.send_text(msg['chat']['id'],
+                                   "Unknown caption. Try: Rotate, Blur, Salt and Pepper, Segment, or Contour.")
+                    return
+
+                # SAVE and SEND the processed photo!
+                img_path = img.save_img()
+                self.send_photo(msg['chat']['id'], img_path)
+
+            else:
+                self.send_text(msg['chat']['id'], "Please add a caption to process your photo.")
+        else:
+            self.send_text(msg['chat']['id'], "Please send me a photo.")
+
+
+

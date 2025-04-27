@@ -52,16 +52,49 @@ class Img:
 
     def rotate(self):
         # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        height = len(self.data)
+        width = len(self.data[0])
+
+        rotated = []
+        for x in range(width):
+            new_row = []
+            for y in range(height - 1, -1, -1):
+                new_row.append(self.data[y][x])
+            rotated.append(new_row)
+
+        self.data = rotated
 
     def salt_n_pepper(self):
         # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        import random
+
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                rand = random.random()
+
+                if rand < 0.2:
+                    self.data[i][j] = 255  # salt (white)
+                elif rand > 0.8:
+                    self.data[i][j] = 0  # pepper (black)
+                else:
+                    pass  # leave it unchanged
 
     def concat(self, other_img, direction='horizontal'):
         # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        if direction == 'horizontal':
+            new_data = []
+            for row1, row2 in zip(self.data, other_img.data):
+                new_row = row1 + row2
+                new_data.append(new_row)
+
+            self.data = new_data
 
     def segment(self):
         # TODO remove the `raise` below, and write your implementation
-        raise NotImplementedError()
+        for i in range(len(self.data)):
+            for j in range(len(self.data[i])):
+                if self.data[i][j] < 100:
+                    self.data[i][j] = 0
+                else:
+                    self.data[i][j] = 255
+
