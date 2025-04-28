@@ -8,6 +8,7 @@ img_path = 'polybot/test/beatles.jpeg' if '/polybot/test' not in os.getcwd() els
 class TestImgConcat(unittest.TestCase):
 
     def setUp(self):
+
         self.img = Img(img_path)
         self.original_dimension = (len(self.img.data), len(self.img.data[0]))
 
