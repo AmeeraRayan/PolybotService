@@ -3,8 +3,10 @@ from unittest.mock import patch, Mock, mock_open, MagicMock
 from polybot.bot import ImageProcessingBot
 import os
 
+# Set image path
 img_path = 'polybot/test/beatles.jpeg' if '/polybot/test' not in os.getcwd() else 'beatles.jpeg'
 
+# Mock Telegram message
 mock_msg = {
     'message_id': 349,
     'from': {
@@ -35,12 +37,13 @@ mock_msg = {
             'width': 320,
             'height': 320
         },
-        {'file_id': 'AgACAgQAAxkDAAIBXWS89nwr4unzj72WKH0XpwLdcrzqAAIBvzEbx73gUbDHoYwLMSkCAQADAgADeAADLwQ',
-         'file_unique_id': 'AQADAb8xG8e94FF9',
-         'file_size': 99929,
-         'width': 660,
-         'height': 660
-         }
+        {
+            'file_id': 'AgACAgQAAxkDAAIBXWS89nwr4unzj72WKH0XpwLdcrzqAAIBvzEbx73gUbDHoYwLMSkCAQADAgADeAADLwQ',
+            'file_unique_id': 'AQADAb8xG8e94FF9',
+            'file_size': 99929,
+            'width': 660,
+            'height': 660
+        }
     ],
     'caption': 'Rotate'
 }
@@ -53,26 +56,33 @@ class TestBot(unittest.TestCase):
         bot = ImageProcessingBot(token='bot_token', telegram_chat_url='webhook_url')
         bot.telegram_bot_client = mock_telebot.return_value
 
+        # Mock get_file
         mock_file = Mock()
         mock_file.file_path = 'photos/beatles.jpeg'
         bot.telegram_bot_client.get_file.return_value = mock_file
 
+        # Mock download_file
         with open(img_path, 'rb') as f:
             bot.telegram_bot_client.download_file.return_value = f.read()
 
         self.bot = bot
 
     def test_contour(self):
+        # Set caption to "Contour"
         mock_msg['caption'] = 'Contour'
 
+        # Mock Img.contour method
         with patch('polybot.img_proc.Img.contour') as mock_method:
             self.bot.handle_message(mock_msg)
 
+            # Check that contour() was called
             mock_method.assert_called_once()
+            # Check that send_photo() was called
             self.bot.telegram_bot_client.send_photo.assert_called_once()
 
     @patch('builtins.open', new_callable=mock_open)
     def test_contour_with_exception(self, mock_open):
+        # Simulate a read-only file system error
         mock_open.side_effect = OSError("Read-only file system")
         mock_msg['caption'] = 'Contour'
         retry_keywords = [
@@ -83,11 +93,10 @@ class TestBot(unittest.TestCase):
 
         self.bot.telegram_bot_client.send_message = MagicMock()
 
-        try:
-            self.bot.handle_message(mock_msg)
-        except Exception as err:
-            self.fail(err)
+        # Just call normally - don't fail manually
+        self.bot.handle_message(mock_msg)
 
+        # Verify a message was sent
         self.assertTrue(self.bot.telegram_bot_client.send_message.called)
 
         call_args = self.bot.telegram_bot_client.send_message.call_args
@@ -96,6 +105,7 @@ class TestBot(unittest.TestCase):
 
         self.assertEqual(chat_id, mock_msg['chat']['id'])
 
+        # Verify message contains retry instructions
         contains_retry = any(keyword in text.lower() for keyword in retry_keywords)
         self.assertTrue(contains_retry, f"Error message was not sent to the user. Make sure your message contains one of {retry_keywords}")
 

@@ -89,35 +89,41 @@ class ImageProcessingBot(Bot):
         logger.info(f'Incoming message: {msg}')
 
         if "photo" in msg:
-            img_path = self.download_user_photo(msg)
-            img = Img(img_path)
+            try:
+                img_path = self.download_user_photo(msg)
+                img = Img(img_path)
 
-            if "caption" in msg:
-                caption = msg["caption"].lower()
+                if "caption" in msg:
+                    caption = msg["caption"].lower()
 
-                if caption == "rotate":
-                    img.rotate()
-                elif caption == "blur":
-                    img.blur()
-                elif caption == "salt and pepper":
-                    img.salt_n_pepper()
-                elif caption == "segment":
-                    img.segment()
-                elif caption == "contour":
-                    img.contour()
+                    if caption == "rotate":
+                        img.rotate()
+                    elif caption == "blur":
+                        img.blur()
+                    elif caption == "salt and pepper":
+                        img.salt_n_pepper()
+                    elif caption == "segment":
+                        img.segment()
+                    elif caption == "contour":
+                        img.contour()
+                    else:
+                        self.send_text(msg['chat']['id'],
+                                       "Unknown caption. Try: Rotate, Blur, Salt and Pepper, Segment, or Contour.")
+                        return
+
+                    # Save and send back the processed image
+                    img_path = img.save_img()
+                    self.send_photo(msg['chat']['id'], img_path)
+
                 else:
-                    self.send_text(msg['chat']['id'],
-                                   "Unknown caption. Try: Rotate, Blur, Salt and Pepper, Segment, or Contour.")
-                    return
+                    self.send_text(msg['chat']['id'], "Please add a caption to process your photo.")
 
-                # SAVE and SEND the processed photo!
-                img_path = img.save_img()
-                self.send_photo(msg['chat']['id'], img_path)
+            except Exception as e:
+                logger.error(f"Error processing image: {e}")
+                self.send_text(msg['chat']['id'],
+                               "An error occurred while processing your image. Please try again later.")
 
-            else:
-                self.send_text(msg['chat']['id'], "Please add a caption to process your photo.")
         else:
             self.send_text(msg['chat']['id'], "Please send me a photo.")
-
 
 
