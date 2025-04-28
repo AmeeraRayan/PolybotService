@@ -11,7 +11,6 @@ class TestImgConcat(unittest.TestCase):
     def setUp(cls):
         cls.img = Img(img_path)
         cls.original_img = Img(img_path)
-
         cls.img.salt_n_pepper()
 
     def test_rotation_dimension(self):
