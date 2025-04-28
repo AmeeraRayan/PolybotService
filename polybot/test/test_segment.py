@@ -10,7 +10,6 @@ class TestImgConcat(unittest.TestCase):
 
     @classmethod
     def setUp(cls):
-
         cls.img = Img(img_path)
         cls.original_img = Img(img_path)
 
