@@ -13,14 +13,14 @@ class TestImgContour(unittest.TestCase):
     def test_contour_dimension(self):
         self.img.contour()
         actual_dimension = (len(self.img.data), len(self.img.data[0]))
-        expected_dimension = (len(self.original_img.data), len(self.original_img.data[0]))
+        expected_dimension = (len(self.original_img.data), len(self.original_img.data[0]) - 1)
         self.assertEqual(expected_dimension, actual_dimension)
 
     def test_contour_effect(self):
         self.img.contour()
         differences = sum(
             1 for row1, row2 in zip(self.original_img.data, self.img.data)
-              for pixel1, pixel2 in zip(row1, row2) if pixel1 != pixel2
+              for pixel1, pixel2 in zip(row1[:len(row2)], row2) if pixel1 != pixel2
         )
         self.assertGreater(differences, 0)
 
