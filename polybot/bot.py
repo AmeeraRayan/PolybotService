@@ -28,8 +28,7 @@ class Bot:
     def send_text_with_quote(self, chat_id, text, quoted_msg_id):
         self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
 
-    def is_current_msg_photo(self, msg):
-        return 'photo' in msg
+
 
     def download_user_photo(self, msg):
         """
@@ -91,6 +90,21 @@ class ImageProcessingBot(Bot):
 
     def handle_message(self, msg):
         logger.info(f'Incoming message: {msg}')
+
+        if "text" in msg:
+            user_text = msg["text"].strip().lower()
+            if user_text in ["hi", "hello", "hey"]:
+                self.send_text(
+                    msg['chat']['id'],
+                    "👋 Hi there! Send me a photo with a caption like `rotate`, `blur`, `segment`, `salt and pepper`, `contour`, or `concat`, and I’ll apply the effect for you! ✨"
+                )
+                return
+            else:
+                self.send_text(
+                    msg['chat']['id'],
+                    "🤖 I'm here to help you filter photos! Please send a photo with one of these captions: `rotate`, `blur`, `segment`, `salt and pepper`, `contour`, or `concat`."
+                )
+                return
 
         if "photo" in msg:
             try:
