@@ -355,10 +355,10 @@ what I do to run my app
 ngrok http 8443 
 after we run this we will take the https://xxxx.ngrok-free.app 
 Then in a new terminal 
+
 we should put these commands one by one 
 export TELEGRAM_BOT_TOKEN="7823834329:AAEHLn3vUIIDEjd9rbuoLYjeTJbn3SL3kVk"
 export BOT_APP_URL="https://YOUR_NGROK_URL_HERE"
 export PYTHONPATH=.
-
 python polybot/app.py 
 
