@@ -360,5 +360,5 @@ we should put these commands one by one
 export TELEGRAM_BOT_TOKEN="7823834329:AAEHLn3vUIIDEjd9rbuoLYjeTJbn3SL3kVk"
 export BOT_APP_URL="https://YOUR_NGROK_URL_HERE"
 export PYTHONPATH=.
-python polybot/app.py 
-
+python polybot/app.py
+export BOT_APP_URL="https://60eb-147-235-220-252.ngrok-free.app"
