@@ -1,12 +1,16 @@
 [Unit]
-Description=Polybot Telegram Service
+Description=Polybot Telegram Bot Service
 After=network.target
 
 [Service]
 User=ec2-user
 WorkingDirectory=/home/ec2-user/PolybotService
-ExecStart=/home/ec2-user/PolybotService/venv/bin/python bot.py
+Environment=PYTHONPATH=/home/ec2-user/PolybotService
+ExecStart=/home/ec2-user/PolybotService/venv/bin/python polybot/app.py
 Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
