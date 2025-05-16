@@ -4,6 +4,7 @@ on:
   push:
     branches:
      - main
+     - feature/user_images_upload_to_s3
   workflow_dispatch:
 
 env:
