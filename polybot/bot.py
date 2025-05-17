@@ -149,7 +149,9 @@ class ImageProcessingBot(Bot):
                             if not success:
                                 self.send_text(msg['chat']['id'],"! Failed to upload image to S3.")
                                 return
-                            response = requests.post("http://localhost:8080/predict", json = {"image_name": file_name, "bucket_name":bucket_name , "region_name" :region_name})
+                            print("Sending to Yolo",file_name, bucket_name,region_name)
+                            yolo_url=os.environ["YOLO_URL"]
+                            response = requests.post(yolo_url, json = {"image_name": file_name, "bucket_name":bucket_name , "region_name" :region_name})
                             response.raise_for_status()
                             data = response.json()
                             labels = data.get("labels", [])
