@@ -11,11 +11,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          repository: AmeeraRayan/PolybotService
+          path: ImageProcessingChatBotProjectOriginal
+      - name: Create target test folder
+        run: mkdir -p polybot/test
 
+      - name: Copy test files
+        run: mv -f ImageProcessingChatBotProjectOriginal/polybot/test/* polybot/test/
       - name: Install dependencies
         run: |
           pip install -r polybot/requirements.txt
-
       - name: Test filters
         run: |
           echo -e "\n\nTesting concat()\n"
@@ -29,7 +35,6 @@ jobs:
           
           echo -e "\n\nTesting segment()\n"
           python -m polybot.test.test_segment
-
       - name: Test bot
         run: |
           python -m polybot.test.test_telegram_bot
