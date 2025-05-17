@@ -1,4 +1,8 @@
+import boto3
 import telebot
+import logging
+from boto3.s3.inject import upload_file
+from botocore.exceptions import ClientError
 from loguru import logger
 import os
 import time
@@ -21,6 +25,19 @@ class Bot:
 
     def send_text_with_quote(self, chat_id, text, quoted_msg_id):
         self.telegram_bot_client.send_message(chat_id, text, reply_to_message_id=quoted_msg_id)
+
+    def upload_image_to_s3(self,bucket , file_name, object_name=None):
+        """Upload a file to an S3 bucket"""
+        if object_name is None:
+            object_name = os.path.basename(file_name)
+
+        s3_client = boto3.client('s3')  # משתמש בפרטי AWS שכבר מוגדרים עם aws configure
+        try:
+            response = s3_client.upload_file(file_name, bucket, object_name)
+        except ClientError as e:
+            logging.error(e)
+            return False
+        return True
 
     def is_current_msg_photo(self, msg):
         return 'photo' in msg
@@ -125,9 +142,15 @@ class ImageProcessingBot(Bot):
                             self.pending_concat_image_path = None
                     elif caption == "detect":
                         try:
-                            with open(img_path, 'rb') as f:
-                                response = requests.post("http://localhost:8080/predict", files={"file": f})
-                                response.raise_for_status()
+                            file_name = os.path.basename(img_path)
+                            bucket_name = "ameera-polybot-images"
+                            region_name="eu-north-1"
+                            success=self.upload_image_to_s3(bucket_name ,img_path,file_name)
+                            if not success:
+                                self.send_text(msg['chat']['id'],"! Failed to upload image to S3.")
+                                return
+                            response = requests.post("http://localhost:8080/predict", json = {"image_name": file_name, "bucket_name":bucket_name , "region_name" :region_name})
+                            response.raise_for_status()
                             data = response.json()
                             labels = data.get("labels", [])
                             if labels:
