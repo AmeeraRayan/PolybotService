@@ -18,6 +18,9 @@ jobs:
         with:
           repository: AmeeraRayan/PolybotService
           path: ImageProcessingChatBotProjectOriginal
+      - name: Clean existing test folder
+        run: rm -rf polybot/test
+
       - name: Copy test files
         run: mv -f ImageProcessingChatBotProjectOriginal/polybot/test/* polybot/test/
       - name: Install dependencies
