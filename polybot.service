@@ -5,8 +5,8 @@ After=network.target
 [Service]
 User=ec2-user
 WorkingDirectory=/home/ec2-user/PolybotService
-Environment=TELEGRAM_TOKEN=7823834329:AAEHln3vUIIDEjd9rbuoLYjeTJbn3SL3kVk
-Environment=YOLO_URL=http://10.0.1.37:8080
+Environment=TELEGRAM_BOT_TOKEN=7823834329:AAEHln3vUIIDEjd9rbuoLYjeTJbn3SL3kVk
+Environment=YOLO_URL=http://10.0.1.37:8000/predict
 Environment=PYTHONPATH=/home/ec2-user/PolybotService
 Environment=TELEGRAM_CHAT_URL=https://sensibly-epic-lark.ngrok-free.app
 ExecStart=/home/ec2-user/PolybotService/venv/bin/python3 polybot/app.py --port 8443
