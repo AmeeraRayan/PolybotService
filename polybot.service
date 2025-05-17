@@ -6,7 +6,6 @@ After=network.target
 User=ec2-user
 WorkingDirectory=/home/ec2-user/PolybotService
 Environment=TELEGRAM_TOKEN=7823834329:AAEHln3vUIIDEjd9rbuoLYjeTJbn3SL3kVk
-Environment=BOT_APP_URL=https://sensibly-epic-lark.ngrok-free.app
 Environment=YOLO_URL=http://10.0.1.37:8080
 Environment=PYTHONPATH=/home/ec2-user/PolybotService
 Environment=TELEGRAM_CHAT_URL=https://sensibly-epic-lark.ngrok-free.app
