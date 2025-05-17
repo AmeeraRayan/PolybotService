@@ -358,7 +358,7 @@ Then in a new terminal
 
 we should put these commands one by one 
 export TELEGRAM_BOT_TOKEN="7823834329:AAEHLn3vUIIDEjd9rbuoLYjeTJbn3SL3kVk"
-export BOT_APP_URL="https://YOUR_NGROK_URL_HERE"
+export TELEGRAM_CHAT_URL="https://YOUR_NGROK_URL_HERE"
 export PYTHONPATH=.
 python polybot/app.py
-export BOT_APP_URL="https://c88a-147-235-209-239.ngrok-free.app"
+export TELEGRAM_CHAT_URL="https://sensibly-epic-lark.ngrok-free.app"
