@@ -17,6 +17,7 @@ class Bot:
         self.telegram_bot_client = telebot.TeleBot(token)
         self.telegram_bot_client.remove_webhook()
         time.sleep(0.5)
+        print(f"token: {token}")
         self.telegram_bot_client.set_webhook(url=f'{telegram_chat_url}/{token}/', timeout=60)
         logger.info(f'Telegram Bot information\n\n{self.telegram_bot_client.get_me()}')
 
@@ -138,7 +139,7 @@ class ImageProcessingBot(Bot):
                         else:
                             another_img = Img(self.pending_concat_image_path)
                             img.concat(another_img, direction='horizontal')
-                            nice_message = "🖼️ Your images have been concatenated side by side! 🖼️"
+                            nice_message = "🖼️ Yourrr images have been concatenated side by side! 🖼️"
                             self.pending_concat_image_path = None
                     elif caption == "detect":
                         try:
