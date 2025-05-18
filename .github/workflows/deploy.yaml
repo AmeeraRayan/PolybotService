@@ -38,9 +38,7 @@ jobs:
 
       - name: Clone or Pull Polybot repo on EC2
         run: |
-          ssh ec2 "if [ -d ~/${REPO_NAME} ]; then cd ~/${REPO_NAME} && git pull; else git clone --branch feature/user_images_upload_to_s3 ${REPO_URL} ~/${REPO_NAME}; fi"
-          scp deploy.sh polybot.service ec2:~/${REPO_NAME}/
-
+          ssh ec2 "if [ -d ~/${REPO_NAME} ]; then cd ~/${REPO_NAME} && git pull; else git clone ${REPO_URL} ~/${REPO_NAME}; fi"
 
       - name: Run deploy.sh script
         run: |
