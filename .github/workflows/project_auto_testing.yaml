@@ -20,6 +20,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r polybot/requirements.txt
+          pip install pytest boto3
       - name: Test filters
         run: |
           echo -e "\n\nTesting concat()\n"
