@@ -11,7 +11,7 @@ sudo systemctl daemon-reload
 
 sudo systemctl restart ngrok.service
 sudo systemctl enable ngrok.service
-
+sleep 10
 sudo systemctl restart polybot.service
 sudo systemctl enable polybot.service
 
