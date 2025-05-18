@@ -23,6 +23,7 @@ class TestImgConcat(unittest.TestCase):
         self.assertEqual(actual_height, expected_height)
         self.assertEqual(actual_width, expected_width)
 
+
     def test_concat_similarity_using_mse(self):
         actual_width = len(self.img.data[0])
 
