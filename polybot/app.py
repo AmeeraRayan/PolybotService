@@ -6,7 +6,7 @@ from bot import Bot, QuoteBot, ImageProcessingBot
 
 app = flask.Flask(__name__)
 
-TELEGRAM_BOT_TOKEN = os.environ['TELEGRAM_BOT_TOKEN']
+TELEGRAM_TOKEN = os.environ['TELEGRAM_TOKEN']
 TELEGRAM_CHAT_URL = os.environ['TELEGRAM_CHAT_URL']
 
 
@@ -15,7 +15,7 @@ def index():
     return 'Ok'
 
 
-@app.route(f'/{TELEGRAM_BOT_TOKEN}/', methods=['POST'])
+@app.route(f'/{TELEGRAM_TOKEN}/', methods=['POST'])
 def webhook():
     req = request.get_json()
     bot.handle_message(req['message'])
@@ -23,6 +23,6 @@ def webhook():
 
 
 if __name__ == "__main__":
-    bot = ImageProcessingBot(TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_URL)
+    bot = ImageProcessingBot(TELEGRAM_TOKEN, TELEGRAM_CHAT_URL)
 
     app.run(host='0.0.0.0', port=8443)
