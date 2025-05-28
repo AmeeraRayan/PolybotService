@@ -354,11 +354,14 @@ Time to submit your solution for testing.
 what I do to run my app 
 ngrok http 8443 
 after we run this we will take the https://xxxx.ngrok-free.app 
+in the ellasticcccc if i run the yolo locally:
+ngrok http 8443 --domain=sensibly-epic-lark.ngrok-free.app
 Then in a new terminal 
 
 we should put these commands one by one 
-export TELEGRAM_BOT_TOKEN="7823834329:AAGAWigNdxNiU7xIyXD8l4aNg2EIlJZI2jE"
-export BOT_APP_URL="https://YOUR_NGROK_URL_HERE"
+export TELEGRAM_TOKEN="7823834329:AAGAWigNdxNiU7xIyXD8l4aNg2EIlJZI2jE"
+export TELEGRAM_CHAT_URL="https://sensibly-epic-lark.ngrok-free.app"
+export YOLO_URL="http://localhost:8000/predict"
 export PYTHONPATH=.
 python polybot/app.py
 export BOT_APP_URL="https://c88a-147-235-209-239.ngrok-free.app"
