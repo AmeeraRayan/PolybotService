@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/ngrok http 8443 --domain=sensibly-epic-lark.ngrok-free.app
+ExecStart=/usr/local/bin/ngrok start --config /home/ec2-user/.ngrok2/ngrok.yml
 Restart=always
 RestartSec=5
 User=ec2-user
