@@ -144,7 +144,7 @@ class ImageProcessingBot(Bot):
                     elif caption == "detect":
                         try:
                             file_name = os.path.basename(img_path)
-                            bucket_name = "ameera-polybot-images"
+                            bucket_name = os.environ.get("S3_BUCKET_NAME")
                             region_name="eu-north-1"
                             success=self.upload_image_to_s3(bucket_name ,img_path,file_name)
                             if not success:
