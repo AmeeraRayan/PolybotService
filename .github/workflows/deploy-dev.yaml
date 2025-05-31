@@ -34,12 +34,20 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
-    - name: Clone or Pull Polybot repo on EC2
+    - name: Clean and Pull Polybot repo on EC2
       run: |
-        ssh ec2 "if [ -d ~/${REPO_NAME} ]; then cd ~/${REPO_NAME} && git pull; else git clone ${REPO_URL} ~/${REPO_NAME}; fi"
+        ssh ec2 "
+          if [ -d ~/${REPO_NAME} ]; then
+            cd ~/${REPO_NAME}
+            git reset --hard HEAD
+            git clean -fd
+            git pull
+          else
+            git clone ${REPO_URL} ~/${REPO_NAME}
+          fi
+        "
         scp polybot-dev.service ec2:~/${REPO_NAME}/polybot-dev.service
         scp deploy-dev.sh ec2:~/${REPO_NAME}/deploy-dev.sh
-        scp ngrok.service ec2:~/${REPO_NAME}/ngrok.service
 
     - name: Run deploy-dev.sh script
       run: |
