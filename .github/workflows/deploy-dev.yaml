@@ -28,7 +28,7 @@ jobs:
         chmod 600 ~/.ssh/private_key
         cat > ~/.ssh/config << EOF
         Host ec2
-          HostName $EC2_HOST
+          HostName $EC2_HOST_DEV
           User $EC2_USERNAME
           IdentityFile ~/.ssh/private_key
           StrictHostKeyChecking no
