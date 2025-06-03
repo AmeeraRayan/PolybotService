@@ -20,7 +20,7 @@ class Bot:
         print(f"token: {token}")
         self.telegram_bot_client.set_webhook(
             url=f'{telegram_chat_url}/{token}/',
-            certificate=open('/etc/letsencrypt/live/ameera.fursa.click/fullchain.pem', 'rb'),
+            certificate=open('/etc/nginx/ssl/polybot.crt', 'r'),
             timeout=60
         )
         logger.info(f'Telegram Bot information\n\n{self.telegram_bot_client.get_me()}')
