@@ -40,14 +40,9 @@ sudo systemctl restart otelcol
 # Copy the polybot service file
 sudo cp polybot.service /etc/systemd/system/
 
-# Copy the ngrok service file
-sudo cp ngrok.service /etc/systemd/system/
-
 # Reload daemon and restart both services
 sudo systemctl daemon-reload
 
-sudo systemctl restart ngrok.service
-sudo systemctl enable ngrok.service
 sleep 10
 sudo systemctl restart polybot.service
 sudo systemctl enable polybot.service
@@ -59,11 +54,5 @@ if ! systemctl is-active --quiet polybot.service; then
   exit 1
 fi
 
-# Check if ngrok is running
-if ! systemctl is-active --quiet ngrok.service; then
-  echo "✗ ngrok.service is not running."
-  sudo systemctl status ngrok.service --no-pager
-  exit 1
-fi
 
 echo "✓ Both Polybot and Ngrok services are running successfully!"
