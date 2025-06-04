@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=ec2-user
 WorkingDirectory=/home/ec2-user/PolybotService
-Environment=TELEGRAM_TOKEN=7546598986:AAFESU1LTN_OCHjvOsSn5YpeCyJ_l81iMMg
+Environment=TELEGRAM_TOKEN=7546598986:AAEisev3gSP3Rk69pI0YtgjZGGkFQ6_--Dc
 Environment=YOLO_URL=http://10.0.1.67:8000/predict
 Environment=S3_BUCKET_NAME=ameera-polybot-dev-images
 Environment=PYTHONPATH=/home/ec2-user/PolybotService
