@@ -43,7 +43,6 @@ sudo cp polybot.service /etc/systemd/system/
 # Reload daemon and restart both services
 sudo systemctl daemon-reload
 
-sleep 10
 sudo systemctl restart polybot.service
 sudo systemctl enable polybot.service
 
