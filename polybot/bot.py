@@ -18,7 +18,8 @@ class Bot:
         self.telegram_bot_client.remove_webhook()
         time.sleep(0.5)
         print(f"token: {token}")
-        cert_path = os.path.join(os.path.dirname(__file__), 'certs', 'polybot.crt')
+        cert_file = os.environ.get('TELEGRAM_CERT_FILE' , 'polybot.crt')
+        cert_path = os.path.join(os.path.dirname(__file__), 'certs', cert_file)
         self.telegram_bot_client.set_webhook(
             url=f'{telegram_chat_url}/{token}/',
             certificate=open(cert_path, 'rb'),

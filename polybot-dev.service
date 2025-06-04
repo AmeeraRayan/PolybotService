@@ -9,6 +9,7 @@ Environment=TELEGRAM_TOKEN=7546598986:AAEisev3gSP3Rk69pI0YtgjZGGkFQ6_--Dc
 Environment=YOLO_URL=http://10.0.1.67:8000/predict
 Environment=S3_BUCKET_NAME=ameera-polybot-dev-images
 Environment=PYTHONPATH=/home/ec2-user/PolybotService
+Environment=TELEGRAM_CERT_FILE=polybot.crt
 Environment=TELEGRAM_CHAT_URL=https://ameera.fursa.click
 ExecStart=/home/ec2-user/PolybotService/.venv/bin/python3 polybot/app.py --port 8443
 Restart=always
