@@ -39,7 +39,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
         chmod 600 ~/.ssh/private_key
-        cat > ~/.ssh/config <<EOF
+        cat > ~/.ssh/config << EOF
         Host ec2
           HostName $EC2_HOST_DEV
           User $EC2_USERNAME
@@ -52,8 +52,18 @@ jobs:
         echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
         echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
 
-    - name: Copy docker-compose file to EC2
+    - name: Copy repo to EC2
       run: |
+        ssh ec2 "
+          if [ -d ~/${REPO_NAME} ]; then
+            cd ~/${REPO_NAME}
+            git reset --hard HEAD
+            git clean -fd
+            git pull
+          else
+            git clone ${REPO_URL} ~/${REPO_NAME}
+          fi
+        "
         scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
 
     - name: Deploy with Docker Compose
@@ -62,18 +72,17 @@ jobs:
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
         IMG_NAME: ${{ inputs.image }}
       run: |
-        ssh ec2 <<'EOF'
-        cd ~/${REPO_NAME}
-        cat > .env <<ENVVARS
-          TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_DEV}
-          TELEGRAM_APP_URL=${TELEGRAM_APP_URL_DEV}
-          IMG_NAME=${IMG_NAME}
-          YOLO_URL=http://10.0.1.67:8000/predict
-          S3_BUCKET_NAME=ameera-polybot-dev-images
-          TELEGRAM_CERT_FILE=polybot.crt
-        ENVVARS
-        
-                docker compose -f docker-compose.dev.yaml down || true
-                docker compose -f docker-compose.dev.yaml pull
-                docker compose -f docker-compose.dev.yaml up -d
-        EOF
+        ssh ec2 "
+          cd ~/${REPO_NAME}
+          cat > .env << EOF
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+            IMG_NAME=${{ inputs.image }}
+            YOLO_URL=http://10.0.1.67:8000/predict
+            S3_BUCKET_NAME=ameera-polybot-dev-images
+            TELEGRAM_CERT_FILE=polybot.crt
+          EOF
+          docker compose -f docker-compose.dev.yaml down || true
+          docker compose -f docker-compose.dev.yaml pull
+          docker compose -f docker-compose.dev.yaml up -d
+        "
