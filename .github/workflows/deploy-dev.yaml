@@ -6,6 +6,17 @@ on:
       image:
         required: true
         type: string
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: true
+      EC2_HOST_DEV:
+        required: true
+      EC2_USERNAME:
+        required: true
+      TELEGRAM_BOT_TOKEN_DEV:
+        required: true
+      TELEGRAM_APP_URL_DEV:
+        required: true
 
 env:
   REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
@@ -63,7 +74,7 @@ jobs:
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
-          cat > .env << EOF
+          cat > .env <<EOF
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
             TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
             IMG_NAME=${{ inputs.image }}
