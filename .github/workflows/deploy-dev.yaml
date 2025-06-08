@@ -36,6 +36,11 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
+    - name: Print debug values (no secrets)
+      run: |
+        echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
+        echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
+
     - name: Copy repo to EC2
       run: |
         ssh ec2 "
