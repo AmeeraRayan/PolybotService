@@ -28,12 +28,12 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
         chmod 600 ~/.ssh/private_key
-        cat > ~/.ssh/config <<EOF
+        cat > ~/.ssh/config << EOF
         Host ec2
-        HostName $EC2_HOST_DEV
-        User $EC2_USERNAME
-        IdentityFile ~/.ssh/private_key
-        StrictHostKeyChecking no
+          HostName $EC2_HOST_DEV
+          User $EC2_USERNAME
+          IdentityFile ~/.ssh/private_key
+          StrictHostKeyChecking no
         EOF
 
     - name: Print debug values (no secrets)
@@ -63,7 +63,7 @@ jobs:
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
-          cat > .env <<EOF
+          cat > .env << EOF
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
             TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
             IMG_NAME=${{ inputs.image }}
