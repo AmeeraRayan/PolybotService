@@ -39,10 +39,16 @@ jobs:
     - name: Copy repo to EC2
       run: |
         ssh ec2 "
-          rm -rf ~/${REPO_NAME}
-          git clone --depth=1 --branch dev ${REPO_URL} ~/${REPO_NAME}
+          if [ -d ~/${REPO_NAME} ]; then
+            cd ~/${REPO_NAME}
+            git reset --hard HEAD
+            git clean -fd
+            git pull
+          else
+            git clone ${REPO_URL} ~/${REPO_NAME}
+          fi
         "
-        scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/
+        scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
 
     - name: Deploy with Docker Compose
       env:
