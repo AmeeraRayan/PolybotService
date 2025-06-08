@@ -1,13 +1,11 @@
-name: Polybot Dev Deploy
+name: Polybot Deploy Dev
 
 on:
-  push:
-    branches:
-      - dev
-
-env:
-  REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
-  REPO_NAME: ${{ github.event.repository.name }}
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
 
 jobs:
   Deploy:
@@ -34,21 +32,29 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
-    - name: Clean and Pull Polybot repo on EC2
+    - name: Copy repo to EC2
+      run: |
+        ssh ec2 "rm -rf ~/PolybotService && git clone --depth=1 --branch dev ${{ github.repositoryUrl }} ~/PolybotService"
+        scp docker-compose.dev.yaml ec2:~/PolybotService/
+
+    - name: Deploy with Docker Compose
+      env:
+        TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+        TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
+        IMG_NAME: ${{ inputs.image }}
       run: |
         ssh ec2 "
-          if [ -d ~/${REPO_NAME} ]; then
-            cd ~/${REPO_NAME}
-            git reset --hard HEAD
-            git clean -fd
-            git pull
-          else
-            git clone ${REPO_URL} ~/${REPO_NAME}
-          fi
+          cd ~/PolybotService
+        
+          echo \"\"
+          echo TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }} > .env
+          echo TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }} >> .env
+          echo IMG_NAME=${{ inputs.image }} >> .env
+          echo YOLO_URL=http://10.0.1.67:8000/predict >> .env
+          echo S3_BUCKET_NAME=ameera-polybot-dev-images >> .env
+          echo TELEGRAM_CERT_FILE=polybot.crt >> .env
+        
+          docker compose -f docker-compose.dev.yaml down || true
+          docker compose -f docker-compose.dev.yaml pull
+          docker compose -f docker-compose.dev.yaml up -d
         "
-        scp polybot-dev.service ec2:~/${REPO_NAME}/polybot-dev.service
-        scp deploy-dev.sh ec2:~/${REPO_NAME}/deploy-dev.sh
-
-    - name: Run deploy-dev.sh script
-      run: |
-        ssh ec2 "cd $REPO_NAME && bash deploy-dev.sh"
