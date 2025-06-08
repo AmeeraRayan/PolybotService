@@ -1,11 +1,22 @@
-name: Polybot Deploy
+name: Polybot Deploy Prod
 
 on:
-  push:
-    branches:
-     - main
-     - feature/user_images_upload_to_s3
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: true
+      EC2_HOST:
+        required: true
+      EC2_USERNAME:
+        required: true
+      TELEGRAM_BOT_TOKEN_PROD:
+        required: true
+      TELEGRAM_APP_URL_PROD:
+        required: true
 
 env:
   REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
@@ -16,42 +27,62 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_HOST: ${{ secrets.EC2_HOST }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
-          cat > ~/.ssh/config << EOF
-          Host ec2
-              HostName $EC2_HOST
-              User $EC2_USERNAME
-              IdentityFile ~/.ssh/private_key
-              StrictHostKeyChecking no
+    - name: Configure SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        EC2_HOST: ${{ secrets.EC2_HOST }}
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
+        chmod 600 ~/.ssh/private_key
+        cat > ~/.ssh/config << EOF
+        Host ec2
+          HostName $EC2_HOST
+          User $EC2_USERNAME
+          IdentityFile ~/.ssh/private_key
+          StrictHostKeyChecking no
+        EOF
+
+    - name: Print debug values (no secrets)
+      run: |
+        echo "HOST: '${{ secrets.EC2_HOST }}'"
+        echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
+
+    - name: Copy repo to EC2
+      run: |
+        ssh ec2 "
+          if [ -d ~/${REPO_NAME} ]; then
+            cd ~/${REPO_NAME}
+            git reset --hard HEAD
+            git clean -fd
+            git pull
+          else
+            git clone ${REPO_URL} ~/${REPO_NAME}
+          fi
+        "
+        scp docker-compose.yaml ec2:~/${REPO_NAME}/docker-compose.yaml
+
+    - name: Deploy with Docker Compose
+      env:
+        TELEGRAM_BOT_TOKEN_PROD: ${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
+        TELEGRAM_APP_URL_PROD: ${{ secrets.TELEGRAM_APP_URL_PROD }}
+        IMG_NAME: ${{ inputs.image }}
+      run: |
+        ssh ec2 "
+          cd ~/${REPO_NAME}
+          cat > .env <<EOF
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
+            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_PROD }}
+            IMG_NAME=${{ inputs.image }}
+            YOLO_URL=http://10.0.1.37:8000/predict
+            S3_BUCKET_NAME=ameera-polybot-images
+            TELEGRAM_CERT_FILE=prod_polybot.crt
           EOF
-
-      - name: Clean and Pull Polybot repo on EC2
-        run: |
-          ssh ec2 "
-            if [ -d ~/${REPO_NAME} ]; then
-              cd ~/${REPO_NAME}
-              git reset --hard HEAD
-              git clean -fd
-              git pull
-            else
-              git clone ${REPO_URL} ~/${REPO_NAME}
-            fi
-          "
-          scp polybot.service ec2:~/${REPO_NAME}/polybot.service
-          scp deploy.sh ec2:~/${REPO_NAME}/deploy.sh
-
-
-      - name: Run deploy.sh script
-        run: |
-          ssh ec2 "cd $REPO_NAME && bash deploy.sh"
+          docker compose -f docker-compose.yaml down || true
+          docker compose -f docker-compose.yaml pull
+          docker compose -f docker-compose.yaml up -d
+        "
