@@ -74,13 +74,13 @@ jobs:
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
-          cat > .env << EOF
-            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
-            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
-            IMG_NAME=${{ inputs.image }}
-            YOLO_URL=http://10.0.1.67:8000/predict
-            S3_BUCKET_NAME=ameera-polybot-dev-images
-            TELEGRAM_CERT_FILE=polybot.crt
+          cat > .env <<EOF
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+          IMG_NAME=${{ inputs.image }}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
           EOF
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
