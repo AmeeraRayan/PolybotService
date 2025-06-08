@@ -75,12 +75,12 @@ jobs:
         ssh ec2 << 'EOF'
         cd ~/${REPO_NAME}
         cat > .env <<ENVVARS
-        TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_DEV}
-        TELEGRAM_APP_URL=${TELEGRAM_APP_URL_DEV}
-        IMG_NAME=${IMG_NAME}
-        YOLO_URL=http://10.0.1.67:8000/predict
-        S3_BUCKET_NAME=ameera-polybot-dev-images
-        TELEGRAM_CERT_FILE=polybot.crt
+          TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_DEV}
+          TELEGRAM_APP_URL=${TELEGRAM_APP_URL_DEV}
+          IMG_NAME=${IMG_NAME}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
         ENVVARS
 
         docker compose -f docker-compose.dev.yaml down || true
