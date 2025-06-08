@@ -46,13 +46,14 @@ jobs:
         ssh ec2 "
           cd ~/PolybotService
         
-          echo \"\"
-          echo TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }} > .env
-          echo TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }} >> .env
-          echo IMG_NAME=${{ inputs.image }} >> .env
-          echo YOLO_URL=http://10.0.1.67:8000/predict >> .env
-          echo S3_BUCKET_NAME=ameera-polybot-dev-images >> .env
-          echo TELEGRAM_CERT_FILE=polybot.crt >> .env
+          cat > .env << EOF
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+          IMG_NAME=${{ inputs.image }}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
+          EOF
         
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
