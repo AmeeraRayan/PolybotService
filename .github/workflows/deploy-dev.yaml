@@ -7,6 +7,10 @@ on:
         required: true
         type: string
 
+env:
+  REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
+  REPO_NAME: ${{ github.event.repository.name }}
+
 jobs:
   Deploy:
     runs-on: ubuntu-latest
@@ -24,7 +28,7 @@ jobs:
         mkdir -p ~/.ssh
         echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
         chmod 600 ~/.ssh/private_key
-        cat > ~/.ssh/config << EOF
+        cat > ~/.ssh/config <<EOF
         Host ec2
           HostName $EC2_HOST_DEV
           User $EC2_USERNAME
@@ -34,8 +38,11 @@ jobs:
 
     - name: Copy repo to EC2
       run: |
-        ssh ec2 "rm -rf ~/PolybotService && git clone --depth=1 --branch dev ${{ github.repositoryUrl }} ~/PolybotService"
-        scp docker-compose.dev.yaml ec2:~/PolybotService/
+        ssh ec2 "
+          rm -rf ~/${REPO_NAME}
+          git clone --depth=1 --branch dev ${REPO_URL} ~/${REPO_NAME}
+        "
+        scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/
 
     - name: Deploy with Docker Compose
       env:
@@ -44,17 +51,15 @@ jobs:
         IMG_NAME: ${{ inputs.image }}
       run: |
         ssh ec2 "
-          cd ~/PolybotService
-        
-          cat > .env << EOF
-          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
-          TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
-          IMG_NAME=${{ inputs.image }}
-          YOLO_URL=http://10.0.1.67:8000/predict
-          S3_BUCKET_NAME=ameera-polybot-dev-images
-          TELEGRAM_CERT_FILE=polybot.crt
+          cd ~/${REPO_NAME}
+          cat > .env <<EOF
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+            IMG_NAME=${{ inputs.image }}
+            YOLO_URL=http://10.0.1.67:8000/predict
+            S3_BUCKET_NAME=ameera-polybot-dev-images
+            TELEGRAM_CERT_FILE=polybot.crt
           EOF
-        
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
