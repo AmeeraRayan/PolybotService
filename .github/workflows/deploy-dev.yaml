@@ -68,8 +68,7 @@ jobs:
 
     - name: 🔍 Debug Print image name
       run: |
-        echo "Image name passed to this job:"
-        echo "${{ inputs.image }}"
+        echo "Image name passed to this job: ${{ inputs.image }}"
 
     - name: Deploy with Docker Compose
       env:
