@@ -27,68 +27,62 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-      - name: Configure SSH
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          EC2_HOST_DEV: ${{ secrets.EC2_HOST_DEV }}
-          EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-        run: |
-          mkdir -p ~/.ssh
-          echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
-          chmod 600 ~/.ssh/private_key
-          cat > ~/.ssh/config << EOF
-          Host ec2
-            HostName $EC2_HOST_DEV
-            User $EC2_USERNAME
-            IdentityFile ~/.ssh/private_key
-            StrictHostKeyChecking no
-          EOF
+    - name: Configure SSH
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        EC2_HOST_DEV: ${{ secrets.EC2_HOST_DEV }}
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+      run: |
+        mkdir -p ~/.ssh
+        echo "$SSH_PRIVATE_KEY" > ~/.ssh/private_key
+        chmod 600 ~/.ssh/private_key
+        cat > ~/.ssh/config << EOF
+        Host ec2
+          HostName $EC2_HOST_DEV
+          User $EC2_USERNAME
+          IdentityFile ~/.ssh/private_key
+          StrictHostKeyChecking no
+        EOF
 
-      - name: Print debug values (no secrets)
-        run: |
-          echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
-          echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
+    - name: Print debug values (no secrets)
+      run: |
+        echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
+        echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
 
-      - name: Copy repo to EC2
-        run: |
-          ssh ec2 "
-            if [ -d ~/${REPO_NAME} ]; then
-              cd ~/${REPO_NAME}
-              git reset --hard HEAD
-              git clean -fd
-              git pull
-            else
-              git clone ${REPO_URL} ~/${REPO_NAME}
-            fi
-          "
-          scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
-
-      - name: Create .env file on EC2
-        env:
-          TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
-          TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
-          IMG_NAME: ${{ inputs.image }}
-        run: |
-          ssh ec2 "
+    - name: Copy repo to EC2
+      run: |
+        ssh ec2 "
+          if [ -d ~/${REPO_NAME} ]; then
             cd ~/${REPO_NAME}
-            cat > .env << EOF
-            TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_DEV}
-            TELEGRAM_APP_URL=${TELEGRAM_APP_URL_DEV}
-            IMG_NAME=${IMG_NAME}
+            git reset --hard HEAD
+            git clean -fd
+            git pull
+          else
+            git clone ${REPO_URL} ~/${REPO_NAME}
+          fi
+        "
+        scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
+
+    - name: Deploy with Docker Compose
+      env:
+        TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+        TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
+        IMG_NAME: ${{ inputs.image }}
+      run: |
+        ssh ec2 "
+          cd ~/${REPO_NAME}
+          echo """
+            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+            IMG_NAME=${{ inputs.image }}
             YOLO_URL=http://10.0.1.67:8000/predict
             S3_BUCKET_NAME=ameera-polybot-dev-images
             TELEGRAM_CERT_FILE=polybot.crt
-          EOF
-          "
-
-      - name: Deploy with Docker Compose
-        run: |
-          ssh ec2 "
-            cd ~/${REPO_NAME}
-            docker compose -f docker-compose.dev.yaml down || true
-            docker compose -f docker-compose.dev.yaml pull
-            docker compose -f docker-compose.dev.yaml up -d
-          "
+            """ > .env
+          docker compose -f docker-compose.dev.yaml down || true
+          docker compose -f docker-compose.dev.yaml pull
+          docker compose -f docker-compose.dev.yaml up -d
+        "
