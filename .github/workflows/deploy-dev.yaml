@@ -73,6 +73,7 @@ jobs:
         IMG_NAME: ${{ inputs.image }}
       run: |
         ssh ec2 "
+          export DOCKER_CLI_PLUGINS_DIR=~/.docker/cli-plugins
           cd ~/${REPO_NAME}
           echo """
             TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
