@@ -2,10 +2,6 @@ name: Polybot Deploy Dev
 
 on:
   workflow_call:
-    inputs:
-      image:
-        required: true
-        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: true
@@ -16,6 +12,8 @@ on:
       TELEGRAM_BOT_TOKEN_DEV:
         required: true
       TELEGRAM_APP_URL_DEV:
+        required: true
+      DOCKERHUB_USERNAME:         # ✅ NEW LINE [added line 20]
         required: true
 
 env:
@@ -68,20 +66,20 @@ jobs:
 
     - name: 🔍 Debug Print image name
       run: |
-        echo "Image name passed to this job: ${{ inputs.image }}"
+        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}"
 
     - name: Deploy with Docker Compose
       env:
         TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
-        IMG_NAME: ${{ inputs.image }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
           echo \"\"\" 
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
           TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
-          IMG_NAME=${{ inputs.image }}
+          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}
           YOLO_URL=http://10.0.1.67:8000/predict
           S3_BUCKET_NAME=ameera-polybot-dev-images
           TELEGRAM_CERT_FILE=polybot.crt
