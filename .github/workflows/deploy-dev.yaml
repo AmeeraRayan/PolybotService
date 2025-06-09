@@ -82,6 +82,7 @@ jobs:
             S3_BUCKET_NAME=ameera-polybot-dev-images
             TELEGRAM_CERT_FILE=polybot.crt
             """ > .env
+        
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
