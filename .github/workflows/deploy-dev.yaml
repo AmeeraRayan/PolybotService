@@ -66,6 +66,11 @@ jobs:
         "
         scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
 
+    - name: 🔍 Debug Print image name
+      run: |
+        echo "Image name passed to this job:"
+        echo "${{ inputs.image }}"
+
     - name: Deploy with Docker Compose
       env:
         TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
@@ -83,7 +88,6 @@ jobs:
           TELEGRAM_CERT_FILE=polybot.crt
           \"\"\" > .env
 
-          export IMG_NAME=${{ inputs.image }}
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
