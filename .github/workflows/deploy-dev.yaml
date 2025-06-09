@@ -85,8 +85,9 @@ jobs:
           TELEGRAM_CERT_FILE=polybot.crt
           \"\"\" > .env
 
-          # 🧼 Force remove all containers that expose port 8443 (running or not)
-          docker rm -f $(docker ps -a --filter expose=8443 -q) 2>/dev/null || true
+        # 🧼 Clean up old containers using 8443 or 8889
+          docker ps --filter 'publish=8443' -q | xargs -r docker rm -f
+          docker ps --filter 'publish=8889' -q | xargs -r docker rm -f
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
