@@ -85,6 +85,7 @@ jobs:
           TELEGRAM_CERT_FILE=polybot.crt
           \"\"\" > .env
 
+          docker ps -q --filter 'expose=8443' | xargs -r docker rm -f  # <- this line
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
