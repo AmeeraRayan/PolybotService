@@ -47,6 +47,11 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
+    - name: Print debug values (no secrets)
+      run: |
+        echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
+        echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
+
     - name: Copy repo to EC2
       run: |
         ssh ec2 "
@@ -67,18 +72,18 @@ jobs:
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
         IMG_NAME: ${{ inputs.image }}
       run: |
-        ssh ec2 '
-          export DOCKER_CLI_PLUGINS_DIR=~/.docker/cli-plugins
+        ssh ec2 "
           cd ~/${REPO_NAME}
-          
-          echo "TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN_DEV}" > .env
-          echo "TELEGRAM_APP_URL=${TELEGRAM_APP_URL_DEV}" >> .env
-          echo "IMG_NAME=${IMG_NAME}" >> .env
-          echo "YOLO_URL=http://10.0.1.67:8000/predict" >> .env
-          echo "S3_BUCKET_NAME=ameera-polybot-dev-images" >> .env
-          echo "TELEGRAM_CERT_FILE=polybot.crt" >> .env
+          echo \"\"\" 
+          TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+          IMG_NAME=${{ inputs.image }}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
+          \"\"\" > .env
 
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
-        '
+        "
