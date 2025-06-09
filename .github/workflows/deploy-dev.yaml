@@ -72,8 +72,9 @@ jobs:
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
         IMG_NAME: ${{ inputs.image }}
       run: |
-        ssh ec2 "
+        ssh ec2  'EOF'
           export DOCKER_CLI_PLUGINS_DIR=~/.docker/cli-plugins
+          export PATH=$DOCKER_CLI_PLUGINS_DIR:$PATH
           cd ~/${REPO_NAME}
           echo """
           TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
@@ -87,4 +88,4 @@ jobs:
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
-          "
+        EOF
