@@ -83,6 +83,7 @@ jobs:
           TELEGRAM_CERT_FILE=polybot.crt
           \"\"\" > .env
 
+          export IMG_NAME=${{ inputs.image }}
           docker compose -f docker-compose.dev.yaml down || true
           docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
