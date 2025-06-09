@@ -9,7 +9,7 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     outputs:
-      image: ${{ steps.set_output.outputs.image }}
+      image: ${{ steps.docker_build.outputs.image }}
     steps:
       - uses: actions/checkout@v4
 
@@ -22,16 +22,9 @@ jobs:
           docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
           IMAGE_NAME=${DOCKER_USERNAME}/polybot-dev:${{ github.run_number }}
           echo "✅ Built image: $IMAGE_NAME"
+          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
-          echo "IMAGE_NAME=$IMAGE_NAME" >> $GITHUB_ENV
-
-      - name: Set image output
-        id: set_output
-        run: |
-          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
-        env:
-          IMAGE_NAME: ${{ env.IMAGE_NAME }}
 
   Deploy:
     needs: Build
@@ -39,8 +32,8 @@ jobs:
     with:
       image: ${{ needs.Build.outputs.image }}
     secrets:
-      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-      EC2_HOST_DEV: ${{ secrets.EC2_HOST_DEV }}
-      EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
-      TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
-      TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        EC2_HOST_DEV: ${{ secrets.EC2_HOST_DEV }}
+        EC2_USERNAME: ${{ secrets.EC2_USERNAME }}
+        TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+        TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
