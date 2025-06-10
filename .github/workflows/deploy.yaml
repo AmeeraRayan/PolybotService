@@ -79,7 +79,7 @@ jobs:
           echo \"\"\" 
           TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
           TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_PROD }}
-          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}
+          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}
           YOLO_URL=http://10.0.1.37:8000/predict
           S3_BUCKET_NAME=ameera-polybot-images
           TELEGRAM_CERT_FILE=prod_polybot.crt
@@ -91,7 +91,7 @@ jobs:
         # Also remove any containers named "polybot" or "otelcol" to avoid reuse
           docker ps -a --filter "name=polybot" -q | xargs -r docker rm -f
           docker ps -a --filter "name=otelcol" -q | xargs -r docker rm -f
-          docker compose -f docker-compose.dev.yaml down || true
-          docker compose -f docker-compose.dev.yaml pull
-          docker compose -f docker-compose.dev.yaml up -d
+          docker compose -f docker-compose.yaml down || true
+          docker compose -f docker-compose.yaml pull
+          docker compose -f docker-compose.yaml up -d
         "
