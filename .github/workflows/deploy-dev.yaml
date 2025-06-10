@@ -1,9 +1,20 @@
-name: Polybot Dev Deploy
+name: Polybot Deploy Dev
 
 on:
-  push:
-    branches:
-      - dev
+  workflow_call:
+    secrets:
+      SSH_PRIVATE_KEY:
+        required: true
+      EC2_HOST_DEV:
+        required: true
+      EC2_USERNAME:
+        required: true
+      TELEGRAM_BOT_TOKEN_DEV:
+        required: true
+      TELEGRAM_APP_URL_DEV:
+        required: true
+      DOCKERHUB_USERNAME:         # ✅ NEW LINE [added line 20]
+        required: true
 
 env:
   REPO_URL: ${{ github.server_url }}/${{ github.repository }}.git
@@ -34,7 +45,12 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
-    - name: Clean and Pull Polybot repo on EC2
+    - name: Print debug values (no secrets)
+      run: |
+        echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
+        echo "USERNAME: '${{ secrets.EC2_USERNAME }}'"
+
+    - name: Copy repo to EC2
       run: |
         ssh ec2 "
           if [ -d ~/${REPO_NAME} ]; then
@@ -46,9 +62,36 @@ jobs:
             git clone ${REPO_URL} ~/${REPO_NAME}
           fi
         "
-        scp polybot-dev.service ec2:~/${REPO_NAME}/polybot-dev.service
-        scp deploy-dev.sh ec2:~/${REPO_NAME}/deploy-dev.sh
+        scp docker-compose.dev.yaml ec2:~/${REPO_NAME}/docker-compose.dev.yaml
 
-    - name: Run deploy-dev.sh script
+    - name: 🔍 Debug Print image name
       run: |
-        ssh ec2 "cd $REPO_NAME && bash deploy-dev.sh"
+        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}"
+
+    - name: Deploy with Docker Compose
+      env:
+        TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+        TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      run: |
+        ssh ec2 "
+          cd ~/${REPO_NAME}
+          echo \"\"\" 
+          TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
+          \"\"\" > .env
+
+        # 🧼 Clean up old containers using 8443 or 8889
+          docker ps --filter 'publish=8443' -q | xargs -r docker rm -f
+          docker ps --filter 'publish=8889' -q | xargs -r docker rm -f
+        # Also remove any containers named "polybot" or "otelcol" to avoid reuse
+          docker ps -a --filter "name=polybot" -q | xargs -r docker rm -f
+          docker ps -a --filter "name=otelcol" -q | xargs -r docker rm -f
+          docker compose -f docker-compose.dev.yaml down || true
+          docker compose -f docker-compose.dev.yaml pull
+          docker compose -f docker-compose.dev.yaml up -d
+        "
