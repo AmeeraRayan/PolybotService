@@ -2,10 +2,6 @@ name: Polybot Deploy Prod
 
 on:
   workflow_call:
-    inputs:
-      image:
-        required: true
-        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: true
@@ -16,6 +12,8 @@ on:
       TELEGRAM_BOT_TOKEN_PROD:
         required: true
       TELEGRAM_APP_URL_PROD:
+        required: true
+      DOCKERHUB_USERNAME: # ✅ NEW LINE [added line 20]
         required: true
 
 env:
@@ -66,23 +64,34 @@ jobs:
         "
         scp docker-compose.yaml ec2:~/${REPO_NAME}/docker-compose.yaml
 
+    - name: 🔍 Debug Print image name
+      run: |
+        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}"
+
     - name: Deploy with Docker Compose
       env:
         TELEGRAM_BOT_TOKEN_PROD: ${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
         TELEGRAM_APP_URL_PROD: ${{ secrets.TELEGRAM_APP_URL_PROD }}
-        IMG_NAME: ${{ inputs.image }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
-          cat > .env <<EOF
-            TELEGRAM_BOT_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
-            TELEGRAM_APP_URL=${{ secrets.TELEGRAM_APP_URL_PROD }}
-            IMG_NAME=${{ inputs.image }}
-            YOLO_URL=http://10.0.1.37:8000/predict
-            S3_BUCKET_NAME=ameera-polybot-images
-            TELEGRAM_CERT_FILE=prod_polybot.crt
-          EOF
-          docker compose -f docker-compose.yaml down || true
-          docker compose -f docker-compose.yaml pull
-          docker compose -f docker-compose.yaml up -d
+          echo \"\"\" 
+          TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_PROD }}
+          TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_PROD }}
+          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}
+          YOLO_URL=http://10.0.1.37:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-images
+          TELEGRAM_CERT_FILE=prod_polybot.crt
+          \"\"\" > .env
+        
+          # 🧼 Clean up old containers using 8443 or 8889
+          docker ps --filter 'publish=8443' -q | xargs -r docker rm -f
+          docker ps --filter 'publish=8889' -q | xargs -r docker rm -f
+        # Also remove any containers named "polybot" or "otelcol" to avoid reuse
+          docker ps -a --filter "name=polybot" -q | xargs -r docker rm -f
+          docker ps -a --filter "name=otelcol" -q | xargs -r docker rm -f
+          docker compose -f docker-compose.dev.yaml down || true
+          docker compose -f docker-compose.dev.yaml pull
+          docker compose -f docker-compose.dev.yaml up -d
         "
