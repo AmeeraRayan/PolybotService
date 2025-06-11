@@ -2,6 +2,10 @@ name: Polybot Deploy Dev
 
 on:
   workflow_call:
+    inputs:
+      image:
+        required: true
+        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: true
@@ -45,6 +49,26 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
+    - name: Determine image name
+      id: get-image
+      run: |
+        # Try input first
+          if [ -n "${{ inputs.image }}" ]; then
+            IMAGE_NAME="${{ inputs.image }}"
+            echo "✅ Using input image: $IMAGE_NAME"
+          # Fallback to artifact
+          elif [ -f "image_name.txt" ]; then
+            IMAGE_NAME=$(cat image_name.txt)
+            echo "✅ Using artifact image: $IMAGE_NAME"
+          else
+            echo "❌ No image name found!"
+            exit 1
+          fi
+          
+          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "🚀 Final image name: $IMAGE_NAME"
+
+
     - name: Print debug values (no secrets)
       run: |
         echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
@@ -66,32 +90,23 @@ jobs:
 
     - name: 🔍 Debug Print image name
       run: |
-        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}"
+        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}"
 
     - name: Deploy with Docker Compose
       env:
         TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
           echo \"\"\" 
           TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
           TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
-          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}
+          IMAGE_NAME=${{ steps.get-image.outputs.image }}
           YOLO_URL=http://10.0.1.67:8000/predict
           S3_BUCKET_NAME=ameera-polybot-dev-images
           TELEGRAM_CERT_FILE=polybot.crt
           \"\"\" > .env
 
-        # 🧼 Clean up old containers using 8443 or 8889
-          docker ps --filter 'publish=8443' -q | xargs -r docker rm -f
-          docker ps --filter 'publish=8889' -q | xargs -r docker rm -f
-        # Also remove any containers named "polybot" or "otelcol" to avoid reuse
-          docker ps -a --filter "name=polybot" -q | xargs -r docker rm -f
-          docker ps -a --filter "name=otelcol" -q | xargs -r docker rm -f
-          docker compose -f docker-compose.dev.yaml down || true
-          docker compose -f docker-compose.dev.yaml pull
           docker compose -f docker-compose.dev.yaml up -d
         "
