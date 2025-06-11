@@ -82,7 +82,7 @@ jobs:
           echo \"\"
           echo \"TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}\" > .env
           echo \"TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}\" >> .env
-          echo \"IMG_NAME=${{ inputs.image }}\" >> .env
+          echo \"IMAGE_NAME=${{ inputs.image }}\" >> .env
           echo \"YOLO_URL=http://10.0.1.67:8000/predict\" >> .env
           echo \"S3_BUCKET_NAME=ameera-polybot-dev-images\" >> .env
           echo \"TELEGRAM_CERT_FILE=polybot.crt\" >> .env
