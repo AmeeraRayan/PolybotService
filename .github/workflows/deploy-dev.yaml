@@ -70,7 +70,7 @@ jobs:
 
     - name: 🔍 Debug Print image name
       run: |
-        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}"
+        echo "Image name built from secrets: ${{ inputs.image }}"
 
     - name: Deploy with Docker Compose
       env:
