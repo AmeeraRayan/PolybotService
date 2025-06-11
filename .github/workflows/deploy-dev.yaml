@@ -28,13 +28,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download image name artifact (fallback)
-      uses: actions/download-artifact@v4
-      with:
-       name: image-name
-       path: ./
-       continue-on-error: true
-
     - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
