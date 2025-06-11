@@ -2,10 +2,6 @@ name: Polybot Deploy Dev
 
 on:
   workflow_call:
-    inputs:
-      image:
-        required: true
-        type: string
     secrets:
       SSH_PRIVATE_KEY:
         required: true
@@ -31,6 +27,13 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Download image name artifact (fallback)
+      uses: actions/download-artifact@v4
+      with:
+       name: image-name
+       path: ./
+       continue-on-error: true
 
     - name: Configure SSH
       env:
@@ -70,23 +73,24 @@ jobs:
 
     - name: 🔍 Debug Print image name
       run: |
-        echo "Image name built from secrets: ${{ inputs.image }}"
+        echo "Image name built from secrets: ${{ secrets.DOCKERHUB_USERNAME }}/polybot-dev:${{ github.run_number }}"
 
     - name: Deploy with Docker Compose
       env:
         TELEGRAM_BOT_TOKEN_DEV: ${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
         TELEGRAM_APP_URL_DEV: ${{ secrets.TELEGRAM_APP_URL_DEV }}
-        IMAGE_NAME: ${{ inputs.image }}
+        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       run: |
         ssh ec2 "
           cd ~/${REPO_NAME}
-          echo \"\"
-          echo \"TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}\" > .env
-          echo \"TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}\" >> .env
-          echo \"IMAGE_NAME=${{ IMAGE_NAME }}\" >> .env
-          echo \"YOLO_URL=http://10.0.1.67:8000/predict\" >> .env
-          echo \"S3_BUCKET_NAME=ameera-polybot-dev-images\" >> .env
-          echo \"TELEGRAM_CERT_FILE=polybot.crt\" >> .env
-        
-          docker compose --env-file .env -f docker-compose.dev.yaml up -d
+          echo \"\"\" 
+          TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
+          TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
+          IMG_NAME=${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}
+          YOLO_URL=http://10.0.1.67:8000/predict
+          S3_BUCKET_NAME=ameera-polybot-dev-images
+          TELEGRAM_CERT_FILE=polybot.crt
+          \"\"\" > .env
+
+          docker compose -f docker-compose.dev.yaml up -d
         "

@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   polybot:
-    image: ${IMAGE_NAME}  # This will be passed from GitHub Actions
+    image: ${IMG_NAME}  # This will be passed from GitHub Actions
     ports:
       - "8443:8443"
     env_file:
