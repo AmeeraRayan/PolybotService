@@ -109,7 +109,7 @@ jobs:
           echo \"\"\" 
           TELEGRAM_TOKEN=${{ secrets.TELEGRAM_BOT_TOKEN_DEV }}
           TELEGRAM_CHAT_URL=${{ secrets.TELEGRAM_APP_URL_DEV }}
-          IMAGE_NAME=${{ steps.get-image.outputs.image }}
+          IMAGE_NAME=${{ inputs.image }}
           YOLO_URL=http://10.0.1.67:8000/predict
           S3_BUCKET_NAME=ameera-polybot-dev-images
           TELEGRAM_CERT_FILE=polybot.crt
