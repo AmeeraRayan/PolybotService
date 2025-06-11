@@ -49,19 +49,6 @@ jobs:
           StrictHostKeyChecking no
         EOF
 
-    - name: Determine image name
-      id: get-image
-      run: |
-        if [ -n "${{ inputs.image }}" ]; then
-          IMAGE_NAME="${{ inputs.image }}"
-          echo "✅ Using input image: $IMAGE_NAME"
-          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
-          echo "🚀 Final image name: $IMAGE_NAME"
-        else
-          echo "❌ No image name found!"
-          exit 1
-        fi
-
     - name: Print debug values (no secrets)
       run: |
         echo "HOST: '${{ secrets.EC2_HOST_DEV }}'"
