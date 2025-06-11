@@ -87,5 +87,5 @@ jobs:
           echo \"S3_BUCKET_NAME=ameera-polybot-dev-images\" >> .env
           echo \"TELEGRAM_CERT_FILE=polybot.crt\" >> .env
         
-          docker compose -f docker-compose.dev.yaml up -d
+          docker compose --env-file .env -f docker-compose.dev.yaml up -d
         "
