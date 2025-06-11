@@ -25,6 +25,12 @@ jobs:
           echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
+      - name: Upload image name
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-name
+          path: image-name.txt
+      
 
   Deploy:
     needs: Build
