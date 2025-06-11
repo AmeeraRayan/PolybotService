@@ -22,9 +22,13 @@ jobs:
           docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
           IMAGE_NAME=${DOCKER_USERNAME}/polybot-dev:${{ github.run_number }}
           echo "✅ Built image: $IMAGE_NAME"
-          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
+
+      - name: Debug built image name
+        run: |
+         echo "✅ This is the image output: ${{ steps.docker_build.outputs.image }}"
       
 
   Deploy:
