@@ -85,13 +85,5 @@ jobs:
           TELEGRAM_CERT_FILE=prod_polybot.crt
           \"\"\" > .env
         
-          # 🧼 Clean up old containers using 8443 or 8889
-          docker ps --filter 'publish=8443' -q | xargs -r docker rm -f
-          docker ps --filter 'publish=8889' -q | xargs -r docker rm -f
-        # Also remove any containers named "polybot" or "otelcol" to avoid reuse
-          docker ps -a --filter "name=polybot" -q | xargs -r docker rm -f
-          docker ps -a --filter "name=otelcol" -q | xargs -r docker rm -f
-          docker compose -f docker-compose.yaml down || true
-          docker compose -f docker-compose.yaml pull
           docker compose -f docker-compose.yaml up -d
         "
