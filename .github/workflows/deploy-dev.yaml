@@ -32,13 +32,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Download image name artifact (fallback)
-      uses: actions/download-artifact@v4
-      with:
-       name: image-name
-       path: ./
-       continue-on-error: true
-
     - name: Configure SSH
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -59,22 +52,15 @@ jobs:
     - name: Determine image name
       id: get-image
       run: |
-        # Try input first
-          if [ -n "${{ inputs.image }}" ]; then
-            IMAGE_NAME="${{ inputs.image }}"
-            echo "✅ Using input image: $IMAGE_NAME"
-          # Fallback to artifact
-          elif [ -f "image_name.txt" ]; then
-            IMAGE_NAME=$(cat image_name.txt)
-            echo "✅ Using artifact image: $IMAGE_NAME"
-          else
-            echo "❌ No image name found!"
-            exit 1
-          fi
-          
+        if [ -n "${{ inputs.image }}" ]; then
+          IMAGE_NAME="${{ inputs.image }}"
+          echo "✅ Using input image: $IMAGE_NAME"
           echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
           echo "🚀 Final image name: $IMAGE_NAME"
-
+        else
+          echo "❌ No image name found!"
+          exit 1
+        fi
 
     - name: Print debug values (no secrets)
       run: |
