@@ -26,6 +26,11 @@ jobs:
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
+      - name: Debug built image name
+        run: |
+         echo "✅ This is the image output: ${{ steps.docker_build.outputs.image }}"
+      
+
   Deploy:
     needs: Build
     uses: ./.github/workflows/deploy-dev.yaml
