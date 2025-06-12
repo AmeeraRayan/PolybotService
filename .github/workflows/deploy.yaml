@@ -63,6 +63,7 @@ jobs:
           fi
         "
         scp docker-compose.yaml ec2:~/${REPO_NAME}/docker-compose.yaml
+        scp otelcol-config.yaml ec2:~/${REPO_NAME}/otelcol-config.yaml
 
     - name: 🔍 Debug Print image name
       run: |
