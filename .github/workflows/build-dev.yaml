@@ -20,9 +20,9 @@ jobs:
           DOCKER_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN }}
         run: |
           docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
-          IMAGE_NAME=${DOCKER_USERNAME}/polybot-dev:${{ github.run_number }}
+          IMAGE_NAME=ameerarayan/polybot-dev:${{ github.run_number }}
           echo "✅ Built image: $IMAGE_NAME"
-          echo "image=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
           docker build -t $IMAGE_NAME .
           docker push $IMAGE_NAME
 
@@ -34,6 +34,8 @@ jobs:
   Deploy:
     needs: Build
     uses: ./.github/workflows/deploy-dev.yaml
+    with:
+      image: ${{ needs.Build.outputs.image }}
     secrets:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
         EC2_HOST_DEV: ${{ secrets.EC2_HOST_DEV }}
