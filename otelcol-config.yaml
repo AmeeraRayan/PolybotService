@@ -8,7 +8,7 @@ receivers:
 
   hostmetrics:
     collection_interval: 10s
-    root_path: /host_proc
+    root_path: /hostfs/proc
     scrapers:
       cpu:
       memory:
