@@ -4,9 +4,6 @@ receivers:
     scrapers:
       cpu:
       memory:
-      disk:
-      filesystem:
-      load:
       network:
 
 exporters:
