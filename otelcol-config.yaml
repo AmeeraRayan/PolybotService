@@ -1,0 +1,28 @@
+receivers:
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'polybot'
+          static_configs:
+            - targets: ['polybot:8443']  # or 'localhost:8000' if using network_mode: host
+
+  hostmetrics:
+    collection_interval: 10s
+    root_path: /host_proc
+    scrapers:
+      cpu:
+      memory:
+      disk:
+      filesystem:
+      load:
+      network:
+
+exporters:
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+
+service:
+  pipelines:
+    metrics:
+      receivers: [prometheus, hostmetrics]
+      exporters: [prometheus]
