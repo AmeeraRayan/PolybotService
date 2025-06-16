@@ -16,15 +16,18 @@ class DynamoDBStorage:
             item = response.get('Item')
             if not item:
                 return None
+
+            # 🧠 Extract labels from detections list
+            detections = item.get("detections", [])
+            labels = [d.get("label") for d in detections if "label" in d]
+
             return {
                 "prediction_uid": item.get("uid"),
                 "original_image": item.get("original_image"),
                 "predicted_image": item.get("predicted_image"),
-                "labels": json.loads(item.get("labels", "[]")),
-                "score": float(item.get("score", 0)),
-                "box": json.loads(item.get("box", "[]")),
+                "labels": labels,
                 "timestamp": item.get("timestamp"),
-                "chat_id": item.get("chat_id")  # make sure YOLO service saves this
+                "chat_id": item.get("chat_id")
             }
         except Exception as e:
             print(f"[ERROR] get_prediction failed: {e}")

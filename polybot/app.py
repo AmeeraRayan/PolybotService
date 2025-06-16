@@ -27,6 +27,7 @@ def prediction(prediction_id):
         labels = prediction.get("labels", [])
         label_text = "🧠 Detected: " + ", ".join(labels) if labels else "😕 No objects detected."
         if chat_id:
+            print(f"[INFO] Sending message to chat_id {chat_id} with labels: {labels}")
             bot.send_text(chat_id, label_text)
         return {"status": "ok"}
     else:
