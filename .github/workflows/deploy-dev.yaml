@@ -84,6 +84,10 @@ jobs:
           YOLO_URL=http://10.0.1.67:8000/predict
           S3_BUCKET_NAME=ameera-polybot-dev-images
           TELEGRAM_CERT_FILE=polybot.crt
+          SQS_QUEUE_URL=https://sqs.eu-north-1.amazonaws.com/228281126655/polybot-chat-messages
+          STORAGE_TYPE=dynamodb
+          AWS_REGION=eu-north-1
+          DYNAMODB_TABLE=Predictions
           \"\"\" > .env
 
           docker compose -f docker-compose.dev.yaml up -d

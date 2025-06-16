@@ -9,7 +9,8 @@ import time
 import requests  # 🆕 for communicating with YOLO service
 from telebot.types import InputFile
 from polybot.img_proc import Img
-
+import boto3
+import json
 
 class Bot:
 
@@ -157,15 +158,15 @@ class ImageProcessingBot(Bot):
                                 self.send_text(msg['chat']['id'],"! Failed to upload image to S3.")
                                 return
                             print("Sending to Yolo",file_name, bucket_name,region_name)
-                            yolo_url=os.environ["YOLO_URL"]
-                            response = requests.post(yolo_url, json = {"image_name": file_name, "bucket_name":bucket_name , "region_name" :region_name})
-                            response.raise_for_status()
-                            data = response.json()
-                            labels = data.get("labels", [])
-                            if labels:
-                                nice_message = "🧠 Detected objects: " + ", ".join(labels)
-                            else:
-                                nice_message = "🔍 No objects detected."
+                            queue_url = os.environ["SQS_QUEUE_URL"]
+                            produce_message_to_sqs(
+                                {"image_name": file_name, "bucket_name": bucket_name, "region_name": region_name , "chat_id": msg['chat']['id']},
+                                queue_url=queue_url,
+                                region=region_name
+                            )
+                            nice_message = "🕐 Your image was uploaded and is being processed... Please wait a moment."
+
+
                         except Exception as e:
                             logger.error(f"Failed to get predictions from YOLO: {e}")
                             nice_message = "❗ Error occurred while contacting YOLO service."
@@ -186,3 +187,14 @@ class ImageProcessingBot(Bot):
                 self.send_text(msg['chat']['id'], "❗ An error occurred while processing your image. Please try again later.")
         else:
             self.send_text(msg['chat']['id'], "Please send me a photo.")
+
+def produce_message_to_sqs(message_body: dict, queue_url: str, region: str):
+    sqs = boto3.client("sqs", region_name=region)
+    try:
+        response = sqs.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message_body)
+        )
+        print(f"✅ Message sent to SQS. ID: {response['MessageId']}")
+    except ClientError as e:
+        print(f"❌ Failed to send message to SQS: {e}")
