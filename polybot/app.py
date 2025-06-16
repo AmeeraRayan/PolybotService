@@ -18,18 +18,20 @@ YOLO_URL = os.environ.get("YOLO_URL", "http://<YOLO_EC2_PRIVATE_IP>:8080")  # fr
 
 @app.route('/predictions/<prediction_id>', methods=['POST'])
 def prediction(prediction_id):
-    try:
-        # Send request to YoloService endpoint
-        response = requests.post(f"{YOLO_URL}/predictions/{prediction_id}")
+    from polybot.storage_dynamo import DynamoDBStorage
+    storage = DynamoDBStorage()
+    prediction = storage.get_prediction(prediction_id)
 
-        if response.status_code == 200:
-            prediction = response.json()
-            return prediction  # contains 'status', 'labels', 'text'
-        else:
-            return {"status": "error", "message": "Prediction not found"}, 404
+    if prediction:
+        chat_id = prediction.get("chat_id")
+        labels = prediction.get("labels", [])
+        label_text = "🧠 Detected: " + ", ".join(labels) if labels else "😕 No objects detected."
+        if chat_id:
+            bot.send_text(chat_id, label_text)
+        return {"status": "ok"}
+    else:
+        return {"status": "error", "message": "Prediction not found"}, 404
 
-    except Exception as e:
-        return {"status": "error", "message": str(e)}, 500
 
 @app.route(f'/{TELEGRAM_TOKEN}/', methods=['POST'])
 def webhook():
