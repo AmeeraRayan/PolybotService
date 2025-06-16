@@ -165,6 +165,19 @@ class ImageProcessingBot(Bot):
                                 region=region_name
                             )
                             nice_message = "🕐 Your image was uploaded and is being processed... Please wait a moment."
+                            self.send_text(msg['chat']['id'], nice_message)
+
+                            # 🧠 Step 2: Ask YOLO for the prediction result by UID
+                            time.sleep(3)  # Optional wait time (adjust if needed)
+                            YOLO_BASE_URL = os.getenv("YOLO_URL")  # Must be in your .env
+                            uid = file_name.split(".")[0]  # Assuming UID = image name without .jpg
+
+                            r = requests.post(f"{YOLO_BASE_URL}/{uid}")
+                            if r.status_code == 200:
+                                result = r.json()
+                                self.send_text(msg['chat']['id'], result["text"])  # 🧠 Detected: ...
+                            else:
+                                self.send_text(msg['chat']['id'], "❌ Prediction not found.")
                         except Exception as e:
                             logger.error(f"Failed to get predictions from YOLO: {e}")
                             nice_message = "❗ Error occurred while contacting YOLO service."
