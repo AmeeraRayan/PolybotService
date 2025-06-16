@@ -172,7 +172,11 @@ class ImageProcessingBot(Bot):
                             uid = file_name.split(".")[0]  # Assuming UID = image name without .jpg
                             yolo_url = os.environ["YOLO_URL"]  # already in .env as: http://10.0.1.67:8000/predict
 
-                            r = requests.post(yolo_url, json={"uid": uid})
+                            r = requests.post(yolo_url, json={
+                                "image_name": file_name,
+                                "bucket_name": bucket_name,
+                                "region_name": region_name
+                            })
                             if r.status_code == 200:
                                 result = r.json()
                                 self.send_text(msg['chat']['id'], result["text"])  # 🧠 Detected: ...
