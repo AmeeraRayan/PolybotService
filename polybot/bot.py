@@ -169,10 +169,10 @@ class ImageProcessingBot(Bot):
 
                             # 🧠 Step 2: Ask YOLO for the prediction result by UID
                             time.sleep(3)  # Optional wait time (adjust if needed)
-                            YOLO_BASE_URL = os.getenv("YOLO_URL")  # Must be in your .env
                             uid = file_name.split(".")[0]  # Assuming UID = image name without .jpg
+                            yolo_url = os.environ["YOLO_URL"]  # already in .env as: http://10.0.1.67:8000/predict
 
-                            r = requests.post(f"{YOLO_BASE_URL}/{uid}")
+                            r = requests.post(yolo_url, json={uid})
                             if r.status_code == 200:
                                 result = r.json()
                                 self.send_text(msg['chat']['id'], result["text"])  # 🧠 Detected: ...
