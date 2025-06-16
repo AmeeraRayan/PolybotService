@@ -87,7 +87,7 @@ jobs:
           SQS_QUEUE_URL=https://sqs.eu-north-1.amazonaws.com/228281126655/polybot-chat-messages-prod
           STORAGE_TYPE=dynamodb
           AWS_REGION=eu-north-1
-          DYNAMODB_TABLE=Predictions
+          DYNAMODB_TABLE=PredictionsProd
           \"\"\" > .env
         
           docker compose -f docker-compose.yaml up -d
