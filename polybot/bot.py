@@ -164,11 +164,9 @@ class ImageProcessingBot(Bot):
                                 queue_url=queue_url,
                                 region=region_name
                             )
-                            img_path = img.save_img()
-                            self.send_photo(msg['chat']['id'], img_path)
                             nice_message = "🕐 Your image was uploaded and is being processed... Please wait a moment."
-                            self.send_text(msg['chat']['id'], nice_message)
-                            return
+
+
                         except Exception as e:
                             logger.error(f"Failed to get predictions from YOLO: {e}")
                             nice_message = "❗ Error occurred while contacting YOLO service."
@@ -177,6 +175,9 @@ class ImageProcessingBot(Bot):
                                        "❗ Unknown caption. Try: Rotate, Blur, Salt and Pepper, Segment, Contour, Concat, or Detect.")
                         return
 
+                    img_path = img.save_img()
+                    self.send_photo(msg['chat']['id'], img_path)
+                    self.send_text(msg['chat']['id'], nice_message)
 
                 else:
                     self.send_text(msg['chat']['id'], "Please add a caption to process your photo.")
