@@ -1,4 +1,4 @@
-name: Docker Scout
+name: 🔍 Docker Scout Scan on Prod Image
 
 on:
   pull_request:
@@ -7,18 +7,36 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write  # 👈 Needed to post results as PR comment
+  pull-requests: write  # Needed to comment scan result on PR
 
 jobs:
-  scan:
-    name: Scan Docker image
+  docker-scout:
+    name: 🔎 Docker Scout Scan on Built Prod Image
     runs-on: ubuntu-latest
 
     steps:
-      - name: Run Docker Scout scan
+      - name: 📦 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: 🛠️ Build polybot-prod Docker image
+        run: |
+          docker build -t polybot-prod:scout -f Dockerfile .
+
+      - name: 🧪 Scan image using Docker Scout
         uses: docker/scout-action@v1
         with:
-          command: quickview
-          image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}
+          command: cves
+          image: polybot-prod:scout
           only-severities: critical,high
-          exit-code: 1
+          exit-code: true           # ❌ Fail if CRITICAL or HIGH CVEs found
+          summary: true             # ✅ Show results in logs
+          write-comment: true       # 💬 Comment results in PR
