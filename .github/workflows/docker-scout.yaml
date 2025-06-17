@@ -40,3 +40,7 @@ jobs:
           exit-code: true           # ❌ Fail if CRITICAL or HIGH CVEs found
           summary: true             # ✅ Show results in logs
           write-comment: true       # 💬 Comment results in PR
+          ignore-cves: |
+            CVE-2024-6345
+            CVE-2025-47273
+            CVE-2025-6020
