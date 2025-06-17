@@ -31,6 +31,11 @@ jobs:
         run: |
           docker build -t polybot-prod:scout -f Dockerfile .
 
+      - name: Push polybot-prod image to Docker Hub
+        run: |
+         docker tag polybot-prod:scout ameerarayan/polybot-prod:scout
+         docker push ameerarayan/polybot-prod:scout
+
       - name: 🧪 Scan image using Docker Scout
         uses: docker/scout-action@v1
         with:
