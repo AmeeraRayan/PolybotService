@@ -28,6 +28,7 @@ jobs:
       - name: Scan image with Docker Scout
         uses: docker/scout-action@v1
         with:
-          image: myimage:scout-test
+          command: quickview
+          image: docker.io/${{ secrets.DOCKERHUB_USERNAME }}/polybot-prod:${{ github.run_number }}
           only-severities: critical,high
-          fail-on: critical,high
+          exit-code: 1
