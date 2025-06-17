@@ -1,0 +1,33 @@
+name: Docker Scout Scan
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  docker-scout:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t myimage:scout-test .
+
+      - name: Scan image with Docker Scout
+        uses: docker/scout-action@v1
+        with:
+          image: myimage:scout-test
+          only-severities: critical,high
+          fail-on: critical,high
