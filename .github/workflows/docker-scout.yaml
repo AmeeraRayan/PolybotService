@@ -41,11 +41,11 @@ jobs:
         with:
           command: cves
           image: polybot-prod:scout
-          only-severities: critical,high
-          exit-code: true           # ❌ Fail if CRITICAL or HIGH CVEs found
+          ignore-base: true
           summary: true             # ✅ Show results in logs
           write-comment: true       # 💬 Comment results in PR
           ignore-cves: |
-            CVE-2024-6345
-            CVE-2025-47273
             CVE-2025-6020
+          exit-code: true           # ❌ Fail if CRITICAL or HIGH CVEs found
+
+
