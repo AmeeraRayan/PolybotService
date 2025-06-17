@@ -1,8 +1,8 @@
 # Use a lightweight Python image
-FROM python:3.13-alpine
+FROM python:3.10
 
 # Install required system packages
-RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y build-essential \ libgl1 \ libegl1 \ libglib2.0-0 \ && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
