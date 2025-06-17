@@ -1,5 +1,5 @@
 # Use a lightweight Python image
-FROM python:3.13-slim
+FROM python:3.13-alpine
 
 # Install required system packages
 RUN apt-get update && apt-get install -y build-essential && rm -rf /var/lib/apt/lists/*
