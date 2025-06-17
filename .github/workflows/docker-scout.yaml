@@ -41,7 +41,6 @@ jobs:
         with:
           command: cves
           image: polybot-prod:scout
-          ignore-base: true
           summary: true             # ✅ Show results in logs
           write-comment: true       # 💬 Comment results in PR
           ignore-cves: |
